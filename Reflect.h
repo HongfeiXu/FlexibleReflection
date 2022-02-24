@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <cstddef>
+#include <unordered_set>
 
 namespace reflect {
 
@@ -68,18 +69,23 @@ struct TypeDescriptor_Struct : TypeDescriptor {
         TypeDescriptor* type;
     };
 
-    std::vector<Member> members;
+    std::vector<Member> members;    // holds information about every reflected member of this struct
 
+    /// <summary>
+    /// ctor
+    /// </summary>
+    /// <param name="init">a pointer to init function</param>
     TypeDescriptor_Struct(void (*init)(TypeDescriptor_Struct*)) : TypeDescriptor{nullptr, 0} {
         init(this);
     }
+    // 问：这个函数是干嘛的？？？
     TypeDescriptor_Struct(const char* name, size_t size, const std::initializer_list<Member>& init) : TypeDescriptor{nullptr, 0}, members{init} {
     }
     virtual void dump(const void* obj, int indentLevel) const override {
         std::cout << name << " {" << std::endl;
         for (const Member& member : members) {
             std::cout << std::string(4 * (indentLevel + 1), ' ') << member.name << " = ";
-            member.type->dump((char*) obj + member.offset, indentLevel + 1);
+            member.type->dump((char*) obj + member.offset, indentLevel + 1);    // 传入每个member的地址，dump 里面按照类型去 cast 这个指针，获取对象
             std::cout << std::endl;
         }
         std::cout << std::string(4 * indentLevel, ' ') << "}";
@@ -111,8 +117,8 @@ struct TypeDescriptor_Struct : TypeDescriptor {
 //--------------------------------------------------------
 
 struct TypeDescriptor_StdVector : TypeDescriptor {
-    TypeDescriptor* itemType;
-    size_t (*getSize)(const void*);
+    TypeDescriptor* itemType;           // a pointer to the type descriptor of its item type
+    size_t (*getSize)(const void*);     // 函数指针，指向的具有 size_t(const void*) 调用形式的函数、lambda
     const void* (*getItem)(const void*, size_t);
 
     template <typename ItemType>
@@ -154,6 +160,47 @@ class TypeResolver<std::vector<T>> {
 public:
     static TypeDescriptor* get() {
         static TypeDescriptor_StdVector typeDesc{(T*) nullptr};
+        return &typeDesc;
+    }
+};
+
+//--------------------------------------------------------
+// Type descriptors for std::unordered_set
+//--------------------------------------------------------
+
+struct TypeDescriptor_StdUnorderedSet : TypeDescriptor {
+    TypeDescriptor* itemType;
+    size_t(*getSize)(const void*);
+    void (*dumpUtil)(const void*, int indentLevel);
+
+    template <typename ItemType>
+    TypeDescriptor_StdUnorderedSet(ItemType*)
+        : TypeDescriptor{"std::unordered_set", sizeof(std::unordered_set<ItemType>)},
+          itemType {TypeResolver<ItemType>::get()} 
+    {
+        getSize = [](const void* unorderedSetPtr) -> size_t {
+            const auto& unorderedSet = *(std::unordered_set<ItemType>*) unorderedSetPtr;
+            return unorderedSet.size();
+        };
+    }
+
+    virtual std::string getFullName() const override {
+        return std::string("std::unordered_set<") + itemType->getFullName() + ">";
+    }
+
+    virtual void dump(const void* obj, int indentLevel) const override
+    {
+        // How???
+    }
+};
+
+
+// Partially specialize TypeResolver<> for std::vectors:
+template <typename T>
+class TypeResolver<std::unordered_set<T>> {
+public:
+    static TypeDescriptor* get() {
+        static TypeDescriptor_StdUnorderedSet typeDesc{ (T*) nullptr };
         return &typeDesc;
     }
 };
