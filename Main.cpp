@@ -17,8 +17,32 @@ struct Node {
     static void initReflection(reflect::TypeDescriptor_Struct*);
 };
 
+struct Cute {
+    std::string key;
+    double value;
+    std::unique_ptr<Node> next;
+
+    REFLECT()
+};
+
 int main() {
     std::cout << "---main---" << std::endl;
+
+    // Cute
+    Cute cute = {
+        "apple",
+        5,
+        std::unique_ptr<Node>{ 
+            new Node{
+                "banana", 
+                5, 
+                {{"hel", 1, {}}}
+            }
+        } 
+    };
+    reflect::TypeDescriptor* typeDescForCute = reflect::TypeResolver<decltype(cute)>::get();
+    typeDescForCute->dump(&cute);
+    std::cout << "\n";
 
     // int
     int i = 109;
@@ -39,7 +63,7 @@ int main() {
     std::cout << "\n";
 
     // unordered_set
-    std::unordered_set<int> us{ 1,2,3 };
+    std::unordered_set<double> us{ 1.2,2,3 };
     reflect::TypeDescriptor* typeDescForUnorderedSet = reflect::TypeResolver<decltype(us)>::get();
     typeDescForUnorderedSet->dump(&us);
     std::cout << "\n";
@@ -53,6 +77,7 @@ int main() {
 
     return 0;
 }
+
 
 // Define Node's type descriptor
 //REFLECT_STRUCT_BEGIN(Node)
@@ -87,4 +112,11 @@ void Node::initReflection(reflect::TypeDescriptor_Struct* typeDesc) {
 // 1. offsetof 
 // If type is not a PODType (until C++11)standard layout type (since C++11), 
 // the behavior is undefined (until C++17)use of the offsetof macro is conditionally-supported (since C++17).
+
+
+REFLECT_STRUCT_BEGIN(Cute)
+REFLECT_STRUCT_MEMBER(key)
+REFLECT_STRUCT_MEMBER(value)
+REFLECT_STRUCT_MEMBER(next)
+REFLECT_STRUCT_END()
 

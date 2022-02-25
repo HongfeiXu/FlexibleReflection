@@ -14,6 +14,7 @@ struct TypeDescriptor_Int : TypeDescriptor {
     }
 };
 
+// template function specialize for int
 template <>
 TypeDescriptor* getPrimitiveDescriptor<int>() {
     static TypeDescriptor_Int typeDesc;
@@ -32,6 +33,7 @@ struct TypeDescriptor_StdString : TypeDescriptor {
     }
 };
 
+// template function specialize for std::string
 template <>
 TypeDescriptor* getPrimitiveDescriptor<std::string>() {
     static TypeDescriptor_StdString typeDesc;
@@ -50,6 +52,7 @@ struct TypeDescriptor_Double : TypeDescriptor {
     }
 };
 
+// template function specialize for double
 template<>
 TypeDescriptor* getPrimitiveDescriptor<double>() {
     static TypeDescriptor_Double typeDesc;
