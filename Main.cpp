@@ -5,16 +5,15 @@ struct Node {
     int value;
     std::vector<Node> children;
 
-    //REFLECT()       // Enable reflection for this type
-
-    // --> 
-
+    REFLECT()       // Enable reflection for this type
+    /*
     friend struct reflect::DefaultResolver;
     // Declare the struct's type descriptor:
     // static member variable, its constructor is automatically called at program startup, before main
     static reflect::TypeDescriptor_Struct Reflection;
     // Declare a function to initialize it:
     static void initReflection(reflect::TypeDescriptor_Struct*);
+    //*/
 };
 
 struct Cute {
@@ -80,14 +79,12 @@ int main() {
 
 
 // Define Node's type descriptor
-//REFLECT_STRUCT_BEGIN(Node)
-//REFLECT_STRUCT_MEMBER(key)
-//REFLECT_STRUCT_MEMBER(value)
-//REFLECT_STRUCT_MEMBER(children)
-//REFLECT_STRUCT_END()
-
-// -->
-
+REFLECT_STRUCT_BEGIN(Node)
+REFLECT_STRUCT_MEMBER(key)
+REFLECT_STRUCT_MEMBER(value)
+REFLECT_STRUCT_MEMBER(children)
+REFLECT_STRUCT_END()
+/*
 // Definition of the struct's type descriptor:
 reflect::TypeDescriptor_Struct Node::Reflection{ Node::initReflection };
 
@@ -112,11 +109,10 @@ void Node::initReflection(reflect::TypeDescriptor_Struct* typeDesc) {
 // 1. offsetof 
 // If type is not a PODType (until C++11)standard layout type (since C++11), 
 // the behavior is undefined (until C++17)use of the offsetof macro is conditionally-supported (since C++17).
-
+//*/
 
 REFLECT_STRUCT_BEGIN(Cute)
 REFLECT_STRUCT_MEMBER(key)
 REFLECT_STRUCT_MEMBER(value)
 REFLECT_STRUCT_MEMBER(next)
 REFLECT_STRUCT_END()
-
